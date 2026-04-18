@@ -8,11 +8,46 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/junicode-font@1.0.2/index.min.css">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
-  <div>
-    <h1>Hello World!</h1>
+  <div class="container py-4">
+    <header class="text-center mb-4">
+      <h1 class="header">SoapstoneApp</h1>
+      <p class="small text">Leave and relive messages.</p>
+    </header>
+
+    <div class="row mb-4">
+      <div class="col-12">
+        <div id="map">
+        </div>
+        <div id="status" class="text-center mt-2 small">Searching for messages...
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-2 mb-3">
+      <div class="col-6">
+        <button class="btn w-100 py-3" onclick="document.getElementById('photoInput').click()">
+          Photo Message
+        </button>
+        <input type="file" id="photoInput" accept="image/*" capture="environment" hidden>
+      </div>
+      <div class="col-6">
+        <button class="btn w-100 py-3" onclick="document.getElementById('audioInput').click()">
+          Audio Message
+        </button>
+        <input type="file" id="audioInput" accept="audio/*" capture="microphone" hidden>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-12">
+        <button id="shareBtn" class="btn btn-outline-warning w-100">
+          Share message
+        </button>
+      </div>
+    </div>
   </div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </body>
 </html>
