@@ -26,3 +26,11 @@ body {
     color: #000000;
     font-weight: bold;
 }
+
+#map {
+    height: 400px;
+    width: 100%;
+    border: 2px solid var(--app-orange);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
