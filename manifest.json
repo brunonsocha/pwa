@@ -1,0 +1,23 @@
+{
+  "short_name": "SoapstoneApp",
+  "name": "Orange Soapstone App",
+  "description": "Leave voice messages and photos around the world.",
+  "icons": [
+    {
+      "src": "icons/icon_x192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "icons/icon_x512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "./index.html",
+  "background_color": "#1a110a",
+  "display": "standalone",
+  "scope": "./",
+  "theme_color": "#ff8c00",
+  "orientation": "portrait"
+}

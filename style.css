@@ -1,0 +1,28 @@
+:root {
+    --app-brown: #1a110a;
+    --app-orange: #ff8c00;
+    --app-yellow: #ffcc00;
+    --app-text: #d1c7b7;
+}
+
+body {
+    background-color: var(--app-brown);
+    color: var(--app-text);
+    font-family: "Junicode", serif;
+}
+
+.header {
+    color: var(--app-orange);
+    font-family: "Junicode", serif;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+}
+
+.btn {
+    font-family: "Junicode", serif;
+    background-color: var(--app-orange);
+    border: 1px solid var(--app-yellow);
+    color: #000000;
+    font-weight: bold;
+}
