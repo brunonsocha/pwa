@@ -34,3 +34,24 @@ body {
     border-radius: 8px;
     margin-bottom: 1rem;
 }
+
+.leaflet-popup-content {
+    margin: 0;
+}
+
+.leaflet-popup-content-wrapper {
+    padding: 0;
+    overflow: hidden;
+    background-color: #000000;
+}
+
+.photo-popup img {
+    max-width: 80vw;
+    max-height: 80vh;
+    width: auto;
+    height: auto;
+    display: block;
+    cursor: pointer;
+}
+
+

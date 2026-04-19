@@ -48,3 +48,75 @@ document.getElementById("shareBtn").addEventListener("click", () => {
         });
     }
 });
+
+let pendingCoords = null;
+
+document.getElementById("photoBtn").addEventListener("click", () => {
+    if (!userCoords) {
+        alert("Missing location permission or there is other issue related to getting your current location");
+        return;
+    }
+
+    pendingCoords = {
+        lat: userCoords.latitude,
+        lng: userCoords.longitude
+    };
+
+    // alert(`Photo location saved: ${pendingCoords.lat}, ${pendingCoords.lng}`);
+    document.getElementById("photoInput").click();
+});
+
+document.getElementById("photoInput").addEventListener("change", event => {
+    const file = event.target.files[0];
+
+    if (!file || !pendingCoords) {
+        return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+        const marker = L.marker([pendingCoords.lat, pendingCoords.lng]).addTo(map);
+
+        marker.bindPopup(`
+            <div class="photo-popup">
+                <img src="${reader.result}">
+            </div>
+        `, {
+            maxWidth: 600,
+            closeButton: false
+        });
+
+        marker.on("popupopen", () => {
+            const popupImage = marker.getPopup().getElement().querySelector(".photo-popup img");
+
+            popupImage.addEventListener("load", () => {
+                marker.getPopup().update();
+            });
+            
+            if (popupImage.complete) {
+                marker.getPopup().update();
+            }
+
+            popupImage.addEventListener("click", () => {
+                marker.closePopup();
+            });
+        });
+
+        marker.openPopup();
+
+        map.setView([pendingCoords.lat, pendingCoords.lng], 16);
+        // alert("Photo marker with image added to map.");
+
+        pendingCoords = null;
+        event.target.value = "";
+    };
+
+    reader.readAsDataURL(file);
+});
+
+
+document.getElementById("audioBtn").addEventListener("click", () => {
+    alert("Audio button works.");
+    document.getElementById("audioInput").click();
+});

@@ -28,13 +28,13 @@
 
     <div class="row g-2 mb-3">
       <div class="col-6">
-        <button class="btn w-100 py-3 btn-outline-warning" onclick="document.getElementById('photoInput').click()">
+        <button id="photoBtn" class="btn w-100 py-3 btn-outline-warning">
           Photo Message
         </button>
         <input type="file" id="photoInput" accept="image/*" capture="environment" hidden>
       </div>
       <div class="col-6">
-        <button class="btn w-100 py-3 btn-outline-warning" onclick="document.getElementById('audioInput').click()">
+        <button id="audioBtn" class="btn w-100 py-3 btn-outline-warning">
           Audio Message
         </button>
         <input type="file" id="audioInput" accept="audio/*" capture="microphone" hidden>
