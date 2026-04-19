@@ -98,7 +98,7 @@ document.getElementById("photoInput").addEventListener("change", event => {
                 marker.getPopup().update();
             }
 
-            popupImage.addEventListener("click", () => {
+            marker.getPopup().getElement().addEventListener("click", () => {
                 marker.closePopup();
             });
         });
