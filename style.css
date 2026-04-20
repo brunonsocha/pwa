@@ -37,12 +37,13 @@ body {
 
 .leaflet-popup-content {
     margin: 0;
+    color: #000000;
 }
 
 .leaflet-popup-content-wrapper {
     padding: 0;
     overflow: hidden;
-    background-color: #000000;
+    background-color: #ffffff;
 }
 
 .photo-popup img {

@@ -17,7 +17,7 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
 ////////////////////////////// location functions ////////////////////////////////////
 
 function normalizeCoord(coord) {
-    return Number(coord).toFixed(6);
+    return Number(Number(coord).toFixed(6));
 }
 
 function createLocationId(lat, lng) {
@@ -47,17 +47,23 @@ let userMarker = null;
 let userRangeCircle = null;
 let userMapCenter = false;
 
-////////////////////////////// location handling ////////////////////////////////////
+////////////////////////////// current location handling ////////////////////////////////////
 
-navigator.geolocation.watchPosition(pos => {
-    userCoords = pos.coords;
-    updateUserLocationMarker(userCoords);
+navigator.geolocation.watchPosition(
+    pos => {
+        userCoords = pos.coords;
+        updateUserLocationMarker(userCoords);
 
-    if (!userMapCenter) {
-        map.setView([userCoords.latitude, userCoords.longitude], 14);
-        userMapCenter = true;
+        if (!userMapCenter) {
+            map.setView([userCoords.latitude, userCoords.longitude], 14);
+            userMapCenter = true;
+        }
+    },
+    err => {
+        console.error("Geolocation error:", err);
+        document.getElementById("status").textContent = "Problems with getting current location right now.";
     }
-});
+);
 
 function updateUserLocationMarker(coords) {
     const userLatLng = [coords.latitude, coords.longitude];
@@ -93,7 +99,14 @@ function updateUserLocationMarker(coords) {
 
 ///////////////////////////////// storage ///////////////////////////////////
 
-let savedMessages = JSON.parse(localStorage.getItem("receivedMessages")) || [];
+let savedMessages = [];
+
+try {
+    const stored = localStorage.getItem("receivedMessages");
+    if (stored) savedMessages = JSON.parse(stored);
+} catch (e) {
+    console.error("Error parsing localStorage: ", e);
+}
 
 function saveMessages() {
     localStorage.setItem("receivedMessages", JSON.stringify(savedMessages));
@@ -111,30 +124,11 @@ function addMessageToStorage(message) {
 
 ///////////////////////////////// pins handling ///////////////////////////////////
 
+
 function addMessageMarker(message) {
     const marker = L.marker([message.lat, message.lng]).addTo(map);
 
-    marker.on("click", () => {
-        shareCoords = message;
-
-        if (!message.content) {
-            marker.bindPopup("Message location selected.", {
-                autoPan: false
-            });
-            marker.openPopup();
-            return;
-        }
-
-        const distance = getDistanceToMessage(message);
-
-        if (distance === null || distance > RANGE_METERS) {
-            marker.bindPopup("Move closer to view this photo.", {
-                autoPan: false
-            });
-            marker.openPopup();
-            return;
-        }
-
+    if (message.content) {
         marker.bindPopup(`
             <div class="photo-popup">
                 <img src="${message.content}">
@@ -142,29 +136,50 @@ function addMessageMarker(message) {
         `, {
             maxWidth: 600,
             closeButton: false,
-            autoPan: false
+            autoPan: false,
+            closeOnClick: true
 
         });
 
-        marker.openPopup();
+        marker.on("popupopen", () => {
+            const popupImage = marker.getPopup().getElement().querySelector(".photo-popup img");
 
-        const popupImage = marker.getPopup().getElement().querySelector(".photo-popup img");
+            popupImage.addEventListener("load", () => {
+                marker.getPopup().update();
+            });
 
-        popupImage.addEventListener("load", () => {
-            marker.getPopup().update();
+            if (popupImage.complete) {
+                marker.getPopup().update();
+            }
+
+            popupImage.addEventListener("click", () => {
+                marker.closePopup();
+            });
         });
+    } else {
+        marker.bindPopup("   Message location selected. In the future there will be photo.", {
+            autoPan: false,
+            closeOnClick: true,
+            closeButton: false
+        });
+    }
 
-        if (popupImage.complete) {
-            marker.getPopup().update();
+    marker.on("click", () => {
+        shareCoords = message;
+
+        const distance = getDistanceToMessage(message);
+
+        if (distance === null || distance > RANGE_METERS) {
+            alert("Come closer! Pin needs to be in your range.");
+            return;
         }
-
-        marker.getPopup().getElement().addEventListener("click", () => {
-            marker.closePopup();
-        });
+        
+        marker.openPopup();
     });
 
     return marker;
 }
+
 
 function renderMessages() {
     savedMessages.forEach(message => {
@@ -262,7 +277,6 @@ document.getElementById("photoInput").addEventListener("change", event => {
         pendingCoords = null;
         event.target.value = "";
     };
-
 
     reader.readAsDataURL(file);
 });
