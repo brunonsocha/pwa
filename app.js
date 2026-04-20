@@ -1,3 +1,5 @@
+///////////////////////////// service worker ////////////////////////////////////////
+
 if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
         navigator.serviceWorker.register("service_worker.js")
@@ -6,13 +8,13 @@ if ("serviceWorker" in navigator) {
     });
 }
 
+///////////////////////////// map setup //////////////////////////////////////////////
+
 const map = L.map('map').setView([50.0647, 19.9450], 13);
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
 
 
-let savedMessages = JSON.parse(localStorage.getItem("receivedMessages")) || [];
-let messageToShare = null;
-
+////////////////////////////// location functions ////////////////////////////////////
 
 function normalizeCoord(coord) {
     return Number(coord).toFixed(6);
@@ -21,6 +23,77 @@ function normalizeCoord(coord) {
 function createLocationId(lat, lng) {
     return `${normalizeCoord(lat)},${normalizeCoord(lng)}`;
 }
+
+function getDistanceToMessage(message) {
+    if (!userCoords) {
+        return null;
+    }
+
+    return map.distance(
+        [userCoords.latitude, userCoords.longitude],
+        [message.lat, message.lng]
+    );
+}
+
+///////////////////////////////// location variables ////////////////////////////////////////
+
+const RANGE_METERS = 500;
+
+let pendingCoords = null;
+let shareCoords = null;
+let userCoords = null;
+
+let userMarker = null;
+let userRangeCircle = null;
+let userMapCenter = false;
+
+////////////////////////////// location handling ////////////////////////////////////
+
+navigator.geolocation.watchPosition(pos => {
+    userCoords = pos.coords;
+    updateUserLocationMarker(userCoords);
+
+    if (!userMapCenter) {
+        map.setView([userCoords.latitude, userCoords.longitude], 14);
+        userMapCenter = true;
+    }
+});
+
+function updateUserLocationMarker(coords) {
+    const userLatLng = [coords.latitude, coords.longitude];
+
+    if (!userMarker) {
+        userMarker = L.circleMarker(userLatLng, {
+            radius: 18,
+            color: "#ffffff",
+            weight: 4,
+            fillColor: "#3388ff",
+            fillOpacity: 1
+        }).addTo(map);
+        userMarker.bindPopup("Your current location", {
+            autoPan: false
+        });
+    } else {
+        userMarker.setLatLng(userLatLng);
+    }
+
+    if (!userRangeCircle) {
+        userRangeCircle = L.circle(userLatLng, {
+            radius: RANGE_METERS,
+            color: "#ffcc00",
+            weight: 2,
+            fillColor: "#ff8c00",
+            fillOpacity: 0.18
+        }).addTo(map);
+    } else {
+        userRangeCircle.setLatLng(userLatLng);
+        userRangeCircle.setRadius(RANGE_METERS);
+    }
+}
+
+///////////////////////////////// storage ///////////////////////////////////
+
+let savedMessages = JSON.parse(localStorage.getItem("receivedMessages")) || [];
 
 function saveMessages() {
     localStorage.setItem("receivedMessages", JSON.stringify(savedMessages));
@@ -36,22 +109,28 @@ function addMessageToStorage(message) {
     return true;
 }
 
+///////////////////////////////// pins handling ///////////////////////////////////
+
 function addMessageMarker(message) {
     const marker = L.marker([message.lat, message.lng]).addTo(map);
 
     marker.on("click", () => {
-        messageToShare = message;
+        shareCoords = message;
 
         if (!message.content) {
-            marker.bindPopup("Message location selected.");
+            marker.bindPopup("Message location selected.", {
+                autoPan: false
+            });
             marker.openPopup();
             return;
         }
 
         const distance = getDistanceToMessage(message);
 
-        if (distance === null || distance > PHOTO_VIEW_DISTANCE_METERS) {
-            marker.bindPopup("Move closer to view this photo.");
+        if (distance === null || distance > RANGE_METERS) {
+            marker.bindPopup("Move closer to view this photo.", {
+                autoPan: false
+            });
             marker.openPopup();
             return;
         }
@@ -62,7 +141,9 @@ function addMessageMarker(message) {
             </div>
         `, {
             maxWidth: 600,
-            closeButton: false
+            closeButton: false,
+            autoPan: false
+
         });
 
         marker.openPopup();
@@ -91,6 +172,10 @@ function renderMessages() {
     });
 }
 
+
+
+////////////////////////////////// sharing handling //////////////////////////////////
+
 const urlParams = new URLSearchParams(window.location.search);
 const newLat = urlParams.get('lat');
 const newLng = urlParams.get('lng');
@@ -107,17 +192,13 @@ if (newLat && newLng) {
     }
 }
 
-renderMessages();
-
-/////////////////////////////////////////////////////////////////////////////
-
 document.getElementById("shareBtn").addEventListener("click", () => {
-    if (!messageToShare) {
+    if (!shareCoords) {
         alert("Select a pin first.");
         return;
     }
 
-    const shareUrl = `${window.location.origin}${window.location.pathname}?lat=${messageToShare.lat}&lng=${messageToShare.lng}`;
+    const shareUrl = `${window.location.origin}${window.location.pathname}?lat=${shareCoords.lat}&lng=${shareCoords.lng}`;
 
     if (!navigator.share) {
         alert(shareUrl);
@@ -131,31 +212,8 @@ document.getElementById("shareBtn").addEventListener("click", () => {
     });
 });
 
-/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////// photo handling ///////////////////////////////////////
 
-let userCoords = null;
-navigator.geolocation.watchPosition(pos => {
-    userCoords = pos.coords;
-});
-
-/////////////////////////////////////////////////////////////////////////////
-
-const PHOTO_VIEW_DISTANCE_METERS = 10;
-
-function getDistanceToMessage(message) {
-    if (!userCoords) {
-        return null;
-    }
-
-    return map.distance(
-        [userCoords.latitude, userCoords.longitude],
-        [message.lat, message.lng]
-    );
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
-let pendingCoords = null;
 
 document.getElementById("photoBtn").addEventListener("click", () => {
     if (!userCoords) {
@@ -197,7 +255,7 @@ document.getElementById("photoInput").addEventListener("change", event => {
 
         const marker = addMessageMarker(newMessage);
 
-        messageToShare = newMessage;
+        shareCoords = newMessage;
         map.setView([newMessage.lat, newMessage.lng], 16);
         marker.fire("click");
 
@@ -209,14 +267,14 @@ document.getElementById("photoInput").addEventListener("change", event => {
     reader.readAsDataURL(file);
 });
 
-/////////////////////////////////////////////////////////////////////////////
+////////////////////////////////// audio handling /////////////////////////////////////
 
 // document.getElementById("audioBtn").addEventListener("click", () => {
 //     alert("Audio button works.");
 //     document.getElementById("audioInput").click();
 // });
 
-/////////////////////////////////////////////////////////////////////////////
+////////////////////////////////// sos handling ///////////////////////////////////////////
 
 const SOS_VIBRATION_PATTERN = [
     150, 100, 150, 100, 150,
@@ -234,3 +292,8 @@ document.getElementById("SOSBtn").addEventListener("click", () => {
 
     navigator.vibrate(SOS_VIBRATION_PATTERN);
 });
+
+
+//////////////////////////////// app start /////////////////////////////////////////////
+
+renderMessages();
