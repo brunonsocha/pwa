@@ -14,36 +14,37 @@
   <div class="container py-4">
     <header class="text-center mb-4">
       <h1 class="header">SoapstoneApp</h1>
-      <p class="small text">Leave and relive messages.</p>
+      <p class="small text">Brunon Socha | Filip Cetnarowicz </p>
     </header>
 
     <div class="row mb-4">
       <div class="col-12">
-        <div id="map">
-        </div>
-        <div id="status" class="text-center mt-2 small">Searching for messages...
-        </div>
+        <div id="map"></div>
+        <div id="status" class="text-center mt-2 small">Leave and share photo messages.</div>
       </div>
     </div>
 
     <div class="row g-2 mb-3">
       <div class="col-6">
         <button id="photoBtn" class="btn w-100 py-3 btn-outline-warning">
-          Photo Message
+          set photo pin
         </button>
         <input type="file" id="photoInput" accept="image/*" capture="environment" hidden>
       </div>
       <div class="col-6">
-        <button id="audioBtn" class="btn w-100 py-3 btn-outline-warning">
-          Audio Message
+        <button id="shareBtn" class="btn w-100 py-3 btn-outline-warning">
+          share selected pin
         </button>
-        <input type="file" id="audioInput" accept="audio/*" capture="microphone" hidden>
+        <!-- <button id="audioBtn" class="btn w-100 py-3 btn-outline-warning">
+          Mark location with audio
+        </button>
+        <input type="file" id="audioInput" accept="audio/*" capture="microphone" hidden> -->
       </div>
     </div>
     <div class="row">
       <div class="col-12">
-        <button id="shareBtn" class="btn btn-outline-warning w-100">
-          Share message
+        <button id="SOSBtn" class="btn w-100 py-5 btn-outline-warning">
+          SOS
         </button>
       </div>
     </div>
